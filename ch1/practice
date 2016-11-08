@@ -1,0 +1,3 @@
+3.因为msg参数是指针类型，为了防止perror函数修改msg参数，所以定义成const类型；而strerror函数的参数是整型，参数传递时是按照值传递，所以不会
+修改原来的参数
+4.调用fflush、fprintf和vprintf函数可能修改errno的值
