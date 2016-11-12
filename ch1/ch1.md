@@ -65,11 +65,10 @@
 ## 1.7出错处理
     posixi和iso c将errno扩展成一个可修改的左值，可以是一个整数，也可以是一个返回出错编号指针的函数；为了支持多线程环境的线程之间的互相干扰，每个线程都有自己的局部error，例如，Linux中将其定义为：
    
-`
+```
    extern int *__errno_location(void)
-
    #define errno (*__errno_location() )
-`
+```
 
 #### 注意
     1. 若没有出错，errno值不会被程序清除，因此，只有函数出错时，其值才不会被程序清除
