@@ -103,5 +103,8 @@ ssize_t write( int fd, void *buf, size_t nbytes );
 其返回值通常与参数nbytes的值相同，否则表示出错。write出错的一个常见原因就是磁盘写满了或者超过了一个给定进程的文件长度限制。
 
 ## 9.IO效率
+   合理设置缓存区的长度可以进行数据的预读可以提到IO效率
 
+## 10.文件共享
+   ![两个独立进程打开同一个文件]( https://github.com/Stephan14/Advanced_Programming_in_the_UNIX_Envinronment/blob/master/ch3/%E4%B8%A4%E4%B8%AA%E8%BF%9B%E7%A8%8B%E6%89%93%E5%BC%80%E5%90%8C%E4%B8%80%E4%B8%AA%E6%96%87%E4%BB%B6.png )
 
