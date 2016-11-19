@@ -129,8 +129,78 @@ ssize_t write( int fd, void *buf, size_t nbytes );
    函数原型：
    ```
 #include "apue.h"
-   ssize_t pread( int fd, void *buf, size_t nbytes. off_t offset );
-   ssize_t pwrite( int fd, void *buf, size_t nbytes, off_t offset );
+ssize_t pread( int fd, void *buf, size_t nbytes. off_t offset );
+ssize_t pwrite( int fd, void *buf, size_t nbytes, off_t offset );
    ```
    pread相当于先调用lseek函数然后调用read函数，但是又稍微有一些区别：
+    调用pread函数不能够中断其定位和读操作 
+    不更新当前文件的偏移量
+
+   3.创建文件
+   如下代码：
+   ```
+if( (fd = open( pathname, O_WRONLY )) < 0 )
+{
+    if( errno == ENOENT )
+    {
+        if( (fd = creat( path, mode )) < 0 )
+            err_sys("cerate error");
+    }
+    else
+        err_sys("open error");
+}
+   ```
+   两个进程运行上面的代码。如果其中一个进程打开文件失败，此时切换到执行另一个进程创建文件并写入文件中一些内容，然后又切换回第一个进程，
+   第一进程创建文件导致原来进程写入的文件内容丢失。如果将open和creat函数合并成原子操作就可以解决问题，一般使用open函数的O_CREAT和O_EXCL选项
+
+## 12.函数dup和dup2
+   函数原型
+   ```
+#include <unistd.h>
+int dup( int fd  );
+   ```
+   返回值：若成功，返回新文件的标识符（当前可用的文件标识符中最小的）；失败，返回-1
+   dup函数等价于：fcntl( fd, F_DUPFD, 0 )
+
+   函数原型
+   ```
+#include <unistd.h>
+int  dup2( int fd, int fd2 );
+    ```
+   返回值：若成功，返回新文件的标识符（当前可用的文件标识符中最小的）；失败，返回-1
+   如果fd2已经打开，则先关闭fd2;如果fd与fd2，则返回fd2而不关闭fd2；否则，fd2的FD_CLOEXEC标志被清除，这样在调用exec函数时，将fd2传递给新的进程
+   dup2函数等价于：close（fd）；fcntl( fd, F_DUPFD, 0 ) 但是，有两点区别：
+    1.dup2是原子操作
+    2.errno不同
+
+## 13.函数sync、fsync和fdatasync
+   由于更改的数据先写到缓冲区，导致缓冲区的内容与磁盘文件的内容不同。为了保证两者之间的数据一致性，使用sync、fsync和fdatasync函数进行一致性同步
+   
+   ```
+#include<unistd.h>
+int fsync( int fd  )
+int fdatasync( int fd )
+void sync( void )
+   ```
+   返回值：成功，返回0；失败，返回-1
+   sync只是将修改过的块缓冲区排入写队列就返回，并不等待实际的写磁盘操作结束
+   fdatasync只同步文件的数据部分，不同步文件的文件属性
+   fsync只对文件描述符指定的文件起作用，并且等待磁盘写操作执行完毕之后返回，不仅同步文件数据部分还同步文件的属性信息,适合数据库程序使用。
+
+## 14.函数fcntl
+   fcntl函数可以改变打开文件的属性
+   函数原型：
+   ```
+#include <fcntl.h>
+int fcntl(int fd, int cmd, ... /* int arg */ );
+   ```
+   fcntl函数的5个功能：
+   1.复制一个已有的描述符（cmd=F_DUPFD或F_DUPFD_CLOEXEC）
+    F_DUPFD: 返回新的文件描述符，与fd公用一个文件表项，但是，有自己的文件描述符标志，其中FD_CLOEXEC文件描述符标志被清除
+    F_DUPFD_CLOEXEC:复制文件描述符，设置与新文件描述符关联的FD_CLOEXEC标志的值
+   2.获取/设置文件描述符标志（cmd=F_GETFD或F_SETFD），某个进程的文件描述符
+   3.获取/设置文件状态标志（cmd=F_GETFL或F_SETFL），系统打开文件表中某个文件表项的文件状态标志（参见open函数的oflag参数）
+    5<>temp表示在文件标识符5上打开文件以供读、写
+   4.获取设置异步I/O所有权标志（cmd=F_GETOWN或F_SETOWN）
+   5.获取设置记录锁（cmd=F_GETLK或F_SETLK）
 
