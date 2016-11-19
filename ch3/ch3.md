@@ -6,14 +6,17 @@
    在符合POSIX.1的应用程序中，文件描述符0、1、2被用STDIN_FILENO、STDOUT_FILENO和STDERR_FILENO来表示用来提高可读性
 
 ## 3.函数open和openat
+
    函数原型：
-   `
+   ```
    #include<fcntl.h>
    int open( const char* path, int oflag, .../*mode_t mode*/ );
    int openat( int fd, const char *path, int oflag, ... /*mode_t mode*/);
-   `
+   ```
+   
    以上两个函数返回值：如成功，返回文件描述符；若出错，返回-1。
    其中，最后一个参数为...,表示余下的参数的数量和类型是可变的；path表示要打开的文件路径；oflag表示可以用来说明此函数的多个选项,可以使用或操作组合多个选项，这些选项以常量的形式在<fcntl.h>定义如下:
+
    O_RDONLY  只读打开
    O_WRONLY  只写打开
    O_RDWR    读、写打开
