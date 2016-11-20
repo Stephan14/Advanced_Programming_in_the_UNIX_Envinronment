@@ -248,6 +248,34 @@
     F_DUPFD_CLOEXEC:复制文件描述符，设置与新文件描述符关联的FD_CLOEXEC标志的值
    2. 获取/设置文件描述符标志（cmd=F_GETFD或F_SETFD），某个进程的文件描述符
    3. 获取/设置文件状态标志（cmd=F_GETFL或F_SETFL），系统打开文件表中某个文件表项的文件状态标志（参见open函数的oflag参数）
-    5<>temp表示在文件标识符5上打开文件以供读、写
+     5<>temp表示在文件标识符5上打开文件以供读、写
    4. 获取设置异步I/O所有权标志（cmd=F_GETOWN或F_SETOWN）
    5. 获取设置记录锁（cmd=F_GETLK或F_SETLK）
+
+#### 注意
+
+   在修改文件描述符标志或文件状态标志的时候，要先获取标志值，然后按照期望的值进行修改，最后设置新的标志值。
+
+   相比于延迟写，使用O_SYNC的同步写会增加CPU的使用时间。
+
+## 15.函数ioctl
+
+   ioctl函数一直是I/O操作的杂物箱，本章中不能使用其他IO操作的通常都可以使用ioctl表示，终端IO是使用ioctl最多的地方。
+
+   函数原型：
+   ```
+   #include <unistd.h> /* System V */
+   #include <sys/ioctl.h> /* BSD and Linux */
+   int ioctl(int fd, int request, ...);
+   ```
+
+   通常有另外一个参数，它常常是指向一个变量或结构的指针
+
+   上面原型中只include了ioctl函数本身需要的头文件。通常，需要另外的设备专用头文件，如：终端I/O的ioctl命令都需要头文件termios.h
+
+## 16./dev/fd
+
+   打开文件/dev/fd/n等效于复制描述符n（假设描述符n是打开的）
+
+   当使用`fd = open("/dev/fd/0", mode )`打开文件时，其等价于`fd = dup(0)`并且即使`fd = open("/dev/fd/0", O_RDWR)`调用成功，我们也不能执行写操作。
+   
