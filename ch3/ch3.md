@@ -47,7 +47,7 @@
 
    2. path参数为相对路径，fd参数指出了相对路径名在文件系统中的开始地址，并且fd参数是通过打开相对路径名所在的目录来获取
 
-   3. path参数指定了相对路径名，fd参数具有特殊值AT_FDCWD。在这种情况下，路径名在当前工作目录中获取，openat函数在操作上与open函数类似
+   3. path参数指定了相对路径名，fd参数具有特殊值AT_FDCWD。在这种情况下，路径名在当前工作目录中获取，openat函数在操作上与open函数类似,例如：`openat(AT_FDCWD, "/home/feh/.vimrc", O_RDONLY);`
 
 
    openat函数引入的原因：
