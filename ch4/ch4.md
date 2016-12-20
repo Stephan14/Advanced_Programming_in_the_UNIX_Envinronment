@@ -15,7 +15,7 @@ fstat()获得已在此描述符上打开的文件相关信息
 
 lstat()类似于stat，但是当pathname为链接时，返回链接的相关信息，而不是文件的信息
 
-fstatat()返回一个相对于打开当前目录（用open函数打开的目录的fd表示）的路径名返回文件信息；当AT_SYMLINK_NOFOLLOW标志被设置时，fststat（）函数不会跟随链接，而是返回链接的文件的信息；当fd的值为AT_FDCWD并且pathname是相对路径名，fstatat会计算相对于当前目录的pathname的参数，如果pathname是绝对路径名，fd参数会被忽略。
+fstatat()返回一个相对于打开当前目录（用open函数打开的目录的fd表示）的路径名返回文件信息；当flag参数被AT_SYMLINK_NOFOLLOW标志被设置时，fststat（）函数不会跟随链接，而是返回链接的文件的信息；当fd的值为AT_FDCWD并且pathname是相对路径名，fstatat会计算相对于当前目录的pathname的参数，如果pathname是绝对路径名，fd参数会被忽略。
 
 结构体stat的内容如下：
 
@@ -42,11 +42,15 @@ long tv_nsec;
 
 一个进程的相关ID：
 
-| :---: | :---: |
-| 相关ID              | 相关用途 |
-| 实际用户ID   实际组ID | 我们实际上是谁 |
-| 有效用户ID   有效组ID | 用于文件访问权限的检查 |
-| 保存的设置用户ID 保存的设置组ID | 由exec函数保存 |
+|              :---:          |     :---:          |
+
+| 相关ID                      | 相关用途             |
+
+| 实际用户ID   实际组ID         | 我们实际上是谁        |
+
+| 有效用户ID   有效组ID         | 用于文件访问权限的检查 |
+
+| 保存的设置用户ID 保存的设置组ID | 由exec函数保存       |
 
 在可以测试常量_POSIX_SAVEID_IDS或者运行时以参数_SC_SAVED_IDS调用函数sysconf判断是否支持以上功能
 
