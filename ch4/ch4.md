@@ -97,8 +97,43 @@ int faccessat( int fd, const char *pathname, int mode,
 
 ## 8.函数umask
 umask函数为进程设置**文件模式创建屏蔽字**，并返回之前的值
+函数原型
 ```
 #include <sys/stat.h>
 mode_t umask( mode_t cmask )
 ```
 返回值：之前的文件模式创建屏蔽字
+
+#### 注意
+1. 用户可以在进程运行时修改umask的值，更改进程的文件模式创建屏蔽字并不影响其父进程的屏蔽字
+2. 用户可以设置umask值以控制他们所创建文件的默认权限
+3. 通常cmask表示成八进制数字，一位代表一种要屏蔽的权限，相关权限的说明如下![](https://github.com/Stephan14/Advanced_Programming_in_the_UNIX_Envinronment/blob/master/ch4/stat%E7%BB%93%E6%9E%84%E4%BD%93%E7%9A%84%E5%86%85%E5%AE%B9.png)
+
+## 9.函数chmod、fchmod和函数fchmodat
+函数原型
+```
+#inlcude <sys/stat.h>
+int chmod(const char* pathname, mode_t mode);
+int fchmod(const char* pathname, mode_t mode);
+int fchmodat(int fd, const char* pathname, mode_t mode, int flag);
+```
+以上三个函数可以使我们在现有的基础上修改文件的访问权限，其中参数mode的说明如下：![](https://github.com/Stephan14/Advanced_Programming_in_the_UNIX_Envinronment/blob/master/ch4/chmod%E5%87%BD%E6%95%B0%E7%9A%84mode%E5%B8%B8%E9%87%8F.png)
+
+chmod函数在指定的文件上修改访问权限
+
+fchmod函数对已经打开文件上修改文件进行操作（尝试一下对正在写的文件修改权限）
+
+fchmodat函数与chmod在以下两种情况下是一样的：
+1. pathname是绝对路径
+2. fd参数为AT_FDCWD而pathname参数为相对路径
+
+否则，fchmodat函数计算相对于打开目录（由参数fd指定）的pathname，当flag参数设置为AT_SYMLINK_NOFOLLOW标志，不跟随符号链接。
+
+#### 注意
+1. 为了改变一个文件的权限位，进程的有效用户ID必须等于文件的所有者ID，或者该进程必须拥有超级用户权限
+2. chmod更新的只是i节点最后一次被更改的时间，而ls输出文件内容最后一个呗修改的时间
+3. chmod函数在下面两种情况下自动清除两个权限位：
+  1. 在FreeBSD、Solaris系统中如果试图设置普通文件的粘着位（S_ISVTX），而且又没有超级用户权限，那么mode中的粘着位会被自动关闭，但是，在linux和mac中并没有这种限制
+  2. 如果新文件的组ID不等于进程的有效组ID或者进程附属组ID中的一个，而且进程没有超级用户权限，那么设置组ID位会被自动关闭。
+
+## 10.粘着位
