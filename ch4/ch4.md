@@ -137,3 +137,58 @@ fchmodat函数与chmod在以下两种情况下是一样的：
   2. 如果新文件的组ID不等于进程的有效组ID或者进程附属组ID中的一个，而且进程没有超级用户权限，那么设置组ID位会被自动关闭。
 
 ## 10.粘着位
+对于文件：
+
+  如果对于一个可执行文件设置了粘着位，在文件列表时看到一个可执行文件的访问权限中有“t”，那么这就意味着该脚本或程序在执行时会被放在交换区(虚存），这样使得下次再执行此可执行程序的时候能较快的装在到内存中。
+
+对于目录：
+
+  如果对于一个目录设置了粘着位，只对该目录具有写权限并且满足下面条件之一的用户才能删除或者重命名该目录一下的文件：
+    1. 拥有此文件
+    2. 拥有此目录
+    3. 是超级用户
+  在linux中通常/var/tmp和/tmp目录设置了粘着位，这就使用户不能删除或者重命名其他人的文件，只能操作自己的文件。
+
+## 11.函数chown、fchown、fchownat和lchown
+函数原型：
+```
+#include <unistd.h>
+int chown(const char *pathname, uid_t owner, gid_t group);
+int fchown(int fd, uid_t owner, gid_t group);
+int fchownat(int fd, const char *pathname, uid_t owner, gid_t group, int flag)；
+int lchown(const char *pathname, uid_t owner, gid_t group);
+```
+
+在所引用的文件是符号链接的情况下，fchownat（如果设置了AT_SYMLINK_NOFOLLOW）和lchown函数更改的是符号链接本身的所有者，而不是该符号链接所指向文件的所有者。
+
+chown不能用于改变符号链接所有者
+
+fchownat与chown函数或者lchown函数在两种情况下是相同的：一是pathname是绝对路径，二是fd参数为AT_FDCWD而pathname参数为相对路径。在以上两种情况下，如果flag参数中设置AT_SYSLINK_NOFOLLOW,则fchmodat与lchown行为相同；如果清除AT_SYSLINK_NOFOLLOW，则fchmodat与chown行为相同
+
+当_POSIX_CHOWN_RESTRICTED对指定文件生效时，只有超级用户可以修改文件的用户ID，普通用户不能更改其他用户ID,但是，普通用户可以更改自己所属文件的组ID(owner等于-1或者文件用户ID)，但是只能更改到你所属的组
+
+#### 注意
+1. 如果这些函数由非超级用户进程调用，则在成功返回时，该文件的设置用户ID位和设置组ID位都被清除
+2. owner和group ID可以从/etc/passswd中查到
+
+## 12.文件长度
+tat结构的st_size成员以字节为单位表示文件的长度，此字段只对普通文件，目录文件和符号链接有意义。
+
+stat结构的st_blksize成员是对文件IO较合适的块长度，在介绍系统IO调用时，该值为4096B。
+
+stat结构的st_blocks成员是所分配的实际512字节块数量。
+
+## 13.文件截断
+有时候需要将文件缩短或者增长，其中将文件的长度截短为0是个特例，在打开文件的时候设置O_TRUNC标志可以做到这一点。
+
+为了截断文件可以调用函数truncate和ftruncate,函数原型：
+```
+#include <unistd.h>
+int truncate(const char *pathname, off_t length);
+int ftruncate(int fd, off_t length);
+```
+
+返回值：成功返回0；失败返回-1
+
+以上两个函数将文件长度截断为length，如果文件的原来长度小于length，文件长度将会增加，以前文件尾端和新文件的尾端之间的数据将会读作0（也有可能增加文件空洞）
+
