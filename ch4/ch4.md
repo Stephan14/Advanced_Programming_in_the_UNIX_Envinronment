@@ -192,3 +192,14 @@ int ftruncate(int fd, off_t length);
 
 以上两个函数将文件长度截断为length，如果文件的原来长度小于length，文件长度将会增加，以前文件尾端和新文件的尾端之间的数据将会读作0（也有可能增加文件空洞）
 
+## 14.文件系统
+![磁盘、分区和文件统](https://github.com/Stephan14/Advanced_Programming_in_the_UNIX_Envinronment/blob/master/ch4/%E7%A3%81%E7%9B%98%E3%80%81%E5%88%86%E5%8C%BA%E5%92%8C%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F.png)
+![](https://github.com/Stephan14/Advanced_Programming_in_the_UNIX_Envinronment/blob/master/ch4/%E8%BE%83%E8%AF%A6%E7%BB%86%E7%9A%84%E6%9F%B1%E9%9D%A2%E7%BB%84%E7%9A%84i%E8%8A%82%E7%82%B9%E5%92%8C%E6%95%B0%E6%8D%AE%E5%9D%97.png)
+1. 在上面的图中两个目录项指向同一个节点，每个i节点都有一个链接计数，其值是指向该节点的目录项数，存储在st_nlink中，这种类型的链接称为硬链接。只有该链接的值为0时，才可以删除该文件。
+2. 符号链接：符号链接的文件包含了该链接指向的文件的名字，文件类型为S_IFLNK。
+3. i节点包含了文件的所有吧信息：文件类型，文件访问权限，文件长度和文件所指向的数据块，只有两项重要的数据存放在目录中：文件名和对应的i节点。
+4. 由于目录项中的i节点编号指向同一个文件系统中相应的i节点，所以ln命令不能跨文件系统
+5. 当不更换文件系统为一个文件重命名的时候，文件内容没有改变，只是删除旧的目录项，创建新的目录项。
+
+目录的链接计数，如下图
+![](https://github.com/Stephan14/Advanced_Programming_in_the_UNIX_Envinronment/blob/master/ch4/%E5%88%9B%E5%BB%BA%E4%BA%86testdir%E5%90%8E%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%AE%9E%E4%BE%8B.png)
