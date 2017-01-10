@@ -203,3 +203,31 @@ int ftruncate(int fd, off_t length);
 
 目录的链接计数，如下图
 ![](https://github.com/Stephan14/Advanced_Programming_in_the_UNIX_Envinronment/blob/master/ch4/%E5%88%9B%E5%BB%BA%E4%BA%86testdir%E5%90%8E%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%AE%9E%E4%BE%8B.png)
+
+## 15.函数link、linkat、unlink、unlinkat和remove
+函数原型：
+```
+#inlcude <unistd.h>
+int link(const char* existingpath, const char* newpath);
+
+int linkat(const char* efd, const char* existingpath, int nfd, const char* newpath, int flag);
+```
+以上两个函数创建一个新的目录项newpath，引用现有的文件existingpath。如果newpath已经存在则返回错误，并且只创建newpath路径中的最后一个分量，其前缀应该是已经存在的。
+
+对于linkat函数来说，有几点需要说明一下：
+1. 现有文件是通过efd和existingpath两个参数指定的，新的路径名是通过nfd和newpath来指定的。默认情况下，如果两个文件中的任意一个是相对路径，则需要通过相应的文件标识符来计算。如果两个文件描述符中任意一个设置为AT_FDCWD，那么相应的路径（如果是相对路径）就可以通过相对于当前目录进行计算。如果是绝对路径则会忽略相应的文件标识符。
+2. 当现有文件是符号链接时（软连接）,如果在flag参数中设置了AT_SYSLINK_NOFOLLOW,则创建指向符号链接最终目标的链接，否则，创建指向符号链接本身的链接
+
+#### 注意
+1. 创建新的目录项和增加链接计数应当是一个原子操作
+2. 大部分系统不支持创建目录的硬链接，因为那样可能引入循环
+
+函数原型：
+
+```
+#inlcude <unistd.h>
+int unlink(const char* existingpath, const char* newpath);
+
+int unlinkat(const char* efd, const char* existingpath, int nfd, const char* newpath, int flag);
+```
+以上两个函数实现删除一个目录项，并将由pathname所引用的文件链接数减1。并且，必须对一个包含该目录项的目录具有读写权限,如果对该目录设置的粘着位，必须对该目录具有写权限，并且具备下面三个条件：
