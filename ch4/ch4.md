@@ -231,3 +231,17 @@ int unlink(const char* existingpath, const char* newpath);
 int unlinkat(const char* efd, const char* existingpath, int nfd, const char* newpath, int flag);
 ```
 以上两个函数实现删除一个目录项，并将由pathname所引用的文件链接数减1。并且，必须对一个包含该目录项的目录具有读写权限,如果对该目录设置的粘着位，必须对该目录具有写权限，并且具备下面三个条件：
+1. 拥有该文件
+2. 拥有该目录
+3. 具有超级用户
+
+#### 注意
+1. 关闭一个文件的时候，内核首先检查打开该文件的进程的数量，如果该计数值为0，然后检查其链接的数量，如果链接的数量为0，则删除该文件
+2. 对于unlinkat函数而言，如果fd参数设置为AT_FDCWD，那么通过相对于进程当前工作目录来计算目录名，如果pathname是绝对路径，那么fd参数将会被忽略。
+3. flag参数给出了一种方法，使调用进程可以改变unlinkat函数的默认行为。当flag值被设置为AT_ REMOVEDIR标志时，unlinkat函数可以类似于rmdir一样删除目录。如果这个标志被清除，unlinkat与unlink执行同样的操作。
+4. **unlink的这种特性经常被程序用来确保即使是在程序崩溃时，它所创建的临时文件也不会遗留下来。进程用open或creat创建一个文件，然后立即调用unlink，因为该文件仍旧是打开的，所以不会将其内容删除。只有当进程关闭该文件或终止时（在这种情况下，内核关闭该进程所打开的全部文件），该文件的内容才被删除。**
+5. 如果pathname是符号链接，那么unlink删除该符号链接，而不是删除由该链接所引用的文件。给出符号链接名的情况下，没有一个函数能删除由该链接所引用的文件。
+
+如果文件系统支持的话，超级用户可以调用unlink，其参数pathname指定一个目录，但是通常应当使用rmdir函数，而不使用unlink这种方式。
+
+我们也可以用remove函数解除对一个文件或目录的链接。对于文件，remove的功能与unlink相同。对于目录，remove的功能与rmdir相同。
