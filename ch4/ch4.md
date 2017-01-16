@@ -245,3 +245,29 @@ int unlinkat(const char* efd, const char* existingpath, int nfd, const char* new
 如果文件系统支持的话，超级用户可以调用unlink，其参数pathname指定一个目录，但是通常应当使用rmdir函数，而不使用unlink这种方式。
 
 我们也可以用remove函数解除对一个文件或目录的链接。对于文件，remove的功能与unlink相同。对于目录，remove的功能与rmdir相同。
+
+## 16.函数rename和renameat
+函数原型
+```
+#include <stdio.h>     
+int rename(const char *oldname, const char *newname);     
+int renameat(int oldfd, const char *oldname, int newfd, const char *newname)
+```
+对newname已经存在进行说明：
+1. 如果oldname指的是一个文件而不是目录，那么为该文件或符号链接重命名。在这种情况下，如果newname已存在，则它不能引用一个目录。如果newname已存在，而且不是一个目录，则先将该目录项删除然后将oldname重命名为newname。对包含oldname的目录以及包含newname的目录，调用进程必须具有写权限，因为将更改这两个目录。
+
+2. 如若oldname指的是一个目录，那么为该目录重命名。如果newname已存在，则它必须引用一个目录，而且该目录应当是空目录（空目录指的是该目录中只有.和..项）。如果newname存在（而且是一个空目录），则先将其删除，然后将oldname重命名为newname。另外，当为一个目录重命名时，newname不能包含oldname作为其路径前缀。例如，不能将/usr/foo重命名为/usr/foo/testdir，因为旧名字（/usr/foo）是新名字的路径前缀，因而不能将其删除。
+
+3. 如若oldname或newname引用符号链接，则处理的是符号链接本身，而不是它所引用的文件。
+
+4. 不能对.和..重命名。更确切地说，.和..都不能出现在oldname和newname的最后部分。
+
+5. 作为一个特例，如果oldname和newname引用同一文件，则函数不做任何更改而成功返回。
+
+#### 注意
+oldfd或newfd参数（或两者）都能设置成AT_FDCWD，此时相对于当前目录来计算相应的路径名。
+
+## 17.符号链接
+引入符号链接的原因：
+1. 硬链接通常要求链接和文件位于同一文件系统中
+2. 只有超级用户才能创建指向目录的硬链接（在底层文件系统支持的情况下）
