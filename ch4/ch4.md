@@ -271,3 +271,26 @@ oldfd或newfd参数（或两者）都能设置成AT_FDCWD，此时相对于当�
 引入符号链接的原因：
 1. 硬链接通常要求链接和文件位于同一文件系统中
 2. 只有超级用户才能创建指向目录的硬链接（在底层文件系统支持的情况下）
+
+各个函数符号链接的处理如下：
+![]()
+#### 注意
+1. 使用符号链接可能在文件系统中引入循环
+2. 符号链接的源文件不一定要求一定存在
+
+## 18.创建和读取符号链接
+函数原型：
+```
+#include<unistd.h>  
+int symlink(const char* actualpath,const char* sympath);  
+int symlinkat(const char* actualpath, int fd, const char* sympath);
+```
+在创建符号链接的时候，并不要求actualpath已经存在。
+
+```
+#include<unistd.h>
+ssize_t readlink(const char* restrict pathname,char * restrict buf ,size_t bufsize);
+ssize_t readlinkat(int fd, const char* restrict pathname,char * restrict buf ,size_t bufsize);
+```
+
+## 19.文件时间
