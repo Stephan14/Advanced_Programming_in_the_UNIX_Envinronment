@@ -294,3 +294,41 @@ ssize_t readlinkat(int fd, const char* restrict pathname,char * restrict buf ,si
 ```
 
 ## 19.文件时间
+unix系统中保存以下三种文件的时间：
+![与每个文件相关的三个值.png](https://github.com/Stephan14/Advanced_Programming_in_the_UNIX_Envinronment/blob/master/ch4/%E4%B8%8E%E6%AF%8F%E4%B8%AA%E6%96%87%E4%BB%B6%E7%9B%B8%E5%85%B3%E7%9A%84%E4%B8%89%E4%B8%AA%E5%80%BC.png)
+#### 注意
+系统并不保存对一个i节点 的最后一次访问时间，所以access和stat函数并不更改这三个时间里的任何一个
+
+目录是包含目录项的文件，增加，删除或者修改目录项会影响到与其所在相关的三个时间。例如：创建一个新文件会影响到包含此新文件的目录，也会影响到该新文件的i节点。但是读或者写只对本文件及i节点，而对目录没有影响，具体的情况如下：
+![各种函数对访问、修改和状态更改时间的作用](https://github.com/Stephan14/Advanced_Programming_in_the_UNIX_Envinronment/blob/master/ch4/%E5%90%84%E7%A7%8D%E5%87%BD%E6%95%B0%E5%AF%B9%E8%AE%BF%E9%97%AE%E3%80%81%E4%BF%AE%E6%94%B9%E5%92%8C%E7%8A%B6%E6%80%81%E6%9B%B4%E6%94%B9%E6%97%B6%E9%97%B4%E7%9A%84%E4%BD%9C%E7%94%A8.png)
+
+## 20.函数futimens、utimensat和utimens
+函数原型
+```
+#include <sys/stat.h>     
+int futimens(int fd, const struct timespec times[2]);    
+int utimensat(int fd, const char *path, const struct timespec times[2], int flag);
+```
+返回值：若成功，返回0；若出错，返回-1
+
+函数介绍：
+
+utimensat的flag参数可用于进一步修改默认行为。如果设置了AT_SYMLINK_NOFOLLOW标志，则符号链接本身的时间就会被修改（如果路径名指向符号链接）。默认的行为是跟随符号链接，并把文件的时间改成符号链接的时间
+
+时间戳可以按下列4种方式之一进行指定：
+
+1. 如果times参数是一个空指针，则访问时间和修改时间两者都设置为当前时间。
+
+2. 如果times参数指向两个timespec结构的数组，任一数组元素的tv_nsec字段的值为UTIME_NOW，相应的时间戳就设置为当前时间，忽略相应的tv_sec字段。
+
+3. 如果times参数指向两个timespec结构的数组，任一数组元素的tv_nsec字段的值为UTIME_OMIT，相应的时间戳保持不变，忽略相应的tv_sec字段。
+
+4. 如果times参数指向两个timespec结构的数组，且tv_nsec字段的值为既不是UTIME_NOW也不是UTIME_OMIT，在这种情况下，相应的时间戳设置为相应的tv_sec和tv_nsec字段的值。
+
+执行这些函数所要求的优先权取决于times参数的值：
+
+1. 如果times是一个空指针，或者任一tv_nsec字段设为UTIME_NOW，则进程的有效用户ID必须等于该文件的所有者ID；进程对该文件必须具有写权限，或者进程是一个超级用户进程。
+
+2. 如果times是非空指针，并且任一tv_nsec字段的值既不是UTIME_NOW也不是UTIME_OMIT，则进程的有效用户ID必须等于该文件的所有者ID，或者进程必须是一个超级用户进程。对文件只具有写权限是不够的。
+
+3. 如果times是非空指针，并且两个tv_nsec字段的值都为UTIME_OMIT，就不执行任何的权限检查。
