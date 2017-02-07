@@ -332,3 +332,40 @@ utimensat的flag参数可用于进一步修改默认行为。如果设置了AT_S
 2. 如果times是非空指针，并且任一tv_nsec字段的值既不是UTIME_NOW也不是UTIME_OMIT，则进程的有效用户ID必须等于该文件的所有者ID，或者进程必须是一个超级用户进程。对文件只具有写权限是不够的。
 
 3. 如果times是非空指针，并且两个tv_nsec字段的值都为UTIME_OMIT，就不执行任何的权限检查。
+
+## 21.函数mkidr、mkdirat和rmdir
+函数原型：
+```
+#include <sys/stat.h>     
+int mkdir(const char *pathname, mode_t mode);     
+int mkdirat(int fd, const char *pathname, mode_t mode);
+```
+函数返回值：若成功，返回0；若出错，返回-1
+
+函数原型：
+```
+#include <unistd.h>     
+int rmdir(const char *pathname);
+```
+函数返回值：若成功，返回0；若出错，返回-1
+
+如果调用此函数使目录的链接计数成为0，并且也没有其他进程打开此目录，则释放由此目录占用的空间。如果在链接计数达到0时，有一个或多个进程打开此目录，则在此函数返回前删除最后一个链接及.和..项。另外，在此目录中不能再创建新文件。但是在最后一个进程关闭它之前并不释放此目录。（即使另一些进程打开该目录，它们在此目录下也不能执行其他操作。这样处理的原因是，为了使rmdir函数成功执行，该目录必须是空的。）
+
+## 22.读目录
+
+函数原型
+```
+#include <dirent.h>  
+
+DIR* opendir(const char* pathname);//成功返回指针，错误返回null
+
+struct dirent *readdir(DIR *dp);//成功返回其指针，若在目录结尾或出错则返回null
+
+void rewinddir(DIR* dp);  
+
+int closedir(DIR* dp);//成功返回0，出错返回-1
+
+long telldir(DIR* dp);//返回与dp关联的目录中的当前的位置  
+
+void seekdir(DIR * dp,long loc);
+```
